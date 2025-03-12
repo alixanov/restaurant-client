@@ -26,6 +26,8 @@ const PersonalAcc = () => {
                return;
           }
 
+
+          
           let workerId;
           try {
                const decodedToken = jwtDecode(token);
