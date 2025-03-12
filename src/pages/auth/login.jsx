@@ -14,7 +14,7 @@ export const Login = memo(() => {
 
     try {
       await axios
-        .post("http://localhost:5000/api/login", value)
+        .post("https://restaurant-server-xd9o.vercel.app/api/login", value)
         .then((res) => {
           console.log(res);
           const token = res.data?.innerData.token;

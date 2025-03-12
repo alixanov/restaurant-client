@@ -14,7 +14,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
 
      useEffect(() => {
           if (isOpen) {
-               axios.get('http://localhost:5000/api/foods/all')
+               axios.get('https://restaurant-server-xd9o.vercel.app/api/foods/all')
                     .then(response => {
                          const allFoods = response.data.innerData;
                          const uniqueCategories = [...new Set(allFoods.map(food => food.category))];

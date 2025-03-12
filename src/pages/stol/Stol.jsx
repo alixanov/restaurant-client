@@ -12,7 +12,7 @@ const Stol = () => {
 
      useEffect(() => {
           axios
-               .get('http://localhost:5000/api/tables/all')
+               .get('https://restaurant-server-xd9o.vercel.app/api/tables/all')
                .then((response) => {
                     setTables(response.data.innerData);
                })
