@@ -1,0 +1,22 @@
+@font-face {
+     src: url(../src/fonts/Lora-Regular.ttf);
+     font-family: "Lora-Regular";
+}
+
+@font-face {
+     src: url(../src/fonts/Montserrat-Regular.ttf);
+     font-family: "Lora-Regular";
+}
+
+* {
+     margin: 0;
+     padding: 0;
+     box-sizing: border-box;
+     overscroll-behavior: none;
+     -webkit-tap-highlight-color: transparent;
+     font-family: "Montserrat-Regular";
+}
+
+a {
+     text-decoration: none;
+}

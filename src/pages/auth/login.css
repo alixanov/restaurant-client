@@ -1,0 +1,113 @@
+.login {
+  width: 100%;
+  height: 100vh;
+  /* Более насыщенный черный градиент с глубокими тонами */
+  background: linear-gradient(135deg, #0d0d0d 0%, #0b0b0b 50%, #1e1e1e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form {
+  max-width: 380px;
+  width: 100%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  /* Чуть темнее фон формы */
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  /* Увеличен блюр для эстетики */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  /* Более глубокая тень */
+}
+
+.login-header {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-form>label {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-form>label input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Более темная граница */
+  border-radius: 8px;
+  font-size: 16px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.login-form>label input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.login-form>label button {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0d0d0d;
+  /* Более темный текст кнопки */
+  background: linear-gradient(135deg, #ffffff 0%, #e6e6e6 100%);
+  /* Чуть темнее градиент */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-form>label button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #e6e6e6 0%, #d4d4d4 100%);
+}
+
+.login-form>label button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loader {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #ffffff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+  /* Чуть темнее плейсхолдер */
+}

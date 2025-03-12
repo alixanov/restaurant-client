@@ -1,0 +1,303 @@
+/* food-modal.css */
+.food-modal-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background: rgba(0, 0, 0, 0.7);
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     z-index: 1000;
+}
+
+.food-modal {
+     background: #1a1a1a;
+     border-radius: 12px;
+     padding: 20px;
+     width: 90%;
+     max-width: 900px;
+     max-height: 90vh;
+     overflow-y: auto;
+     color: #fff;
+     font-family: 'Arial', sans-serif;
+     position: relative;
+}
+
+.food-modal__header {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     margin-bottom: 20px;
+}
+
+.food-modal__close {
+     background: none;
+     border: none;
+     color: #fff;
+     font-size: 24px;
+     cursor: pointer;
+     padding: 0;
+     width: 24px;
+     height: 24px;
+     line-height: 24px;
+}
+
+.food-modal__title {
+     font-size: 20px;
+     margin: 0;
+}
+
+.food-modal__subtitle {
+     font-size: 16px;
+     margin: 10px 0;
+}
+
+.food-modal__categories-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+     gap: 10px;
+}
+
+.food-modal__category-btn {
+     background: #333;
+     border: none;
+     border-radius: 6px;
+     padding: 10px;
+     color: #fff;
+     font-size: 14px;
+     cursor: pointer;
+     transition: background 0.2s ease;
+}
+
+.food-modal__category-btn:hover {
+     background: #444;
+}
+
+.food-modal__back-btn {
+     background: none;
+     border: none;
+     color: #fff;
+     font-size: 18px;
+     cursor: pointer;
+     margin-bottom: 10px;
+}
+
+.food-modal__grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+     gap: 15px;
+}
+
+.food-modal__item {
+     background: #222;
+     border-radius: 6px;
+     padding: 10px;
+     text-align: center;
+     cursor: pointer;
+     transition: all 0.2s ease;
+}
+
+.food-modal__item:hover {
+     background: #2a2a2a;
+}
+
+.food-modal__item.active {
+     background: linear-gradient(135deg, #4a1e1e, #2a1a1a);
+     /* Новый градиент для активной карточки */
+     border: 1px solid #555;
+}
+
+.food-modal__image {
+     width: 60px;
+     height: 60px;
+     object-fit: cover;
+     border-radius: 4px;
+     margin: 0 auto 8px;
+     display: block;
+}
+
+.food-modal__name {
+     font-size: 14px;
+     margin-bottom: 5px;
+     display: block;
+}
+
+.food-modal__price {
+     font-size: 12px;
+     opacity: 0.8;
+     display: block;
+}
+
+.food-modal__controls {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 10px;
+     /* Увеличили расстояние между элементами */
+     margin-top: 8px;
+}
+
+.food-modal__control-btn {
+     background: #444;
+     border: none;
+     border-radius: 50%;
+     /* Круглые кнопки для креативности */
+     width: 26px;
+     /* Увеличили размер */
+     height: 26px;
+     color: #fff;
+     font-size: 16px;
+     /* Увеличили шрифт */
+     cursor: pointer;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     transition: background 0.2s ease, transform 0.2s ease;
+     /* Добавили transform для эффекта */
+     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+     /* Лёгкая тень для глубины */
+}
+
+.food-modal__control-btn:hover {
+     background: #666;
+     /* Чуть светлее при наведении */
+     transform: scale(1.1);
+     /* Лёгкое увеличение при наведении */
+}
+
+.food-modal__control-btn:active {
+     transform: scale(0.95);
+     /* Эффект нажатия */
+}
+
+.food-modal__count {
+     font-size: 14px;
+     min-width: 20px;
+     text-align: center;
+}
+
+.food-modal__footer {
+     display: flex;
+     justify-content: space-between;
+     padding-top: 15px;
+     margin-top: 15px;
+     border-top: 1px solid #333;
+}
+
+.food-modal__cancel-btn,
+.food-modal__order-btn {
+     padding: 8px 16px;
+     border-radius: 6px;
+     font-size: 14px;
+     cursor: pointer;
+     transition: all 0.2s ease;
+}
+
+.food-modal__cancel-btn {
+     background: none;
+     border: 1px solid #fff;
+     color: #fff;
+}
+
+.food-modal__cancel-btn:hover:not(:disabled) {
+     background: #333;
+}
+
+.food-modal__order-btn {
+     background: #fff;
+     border: none;
+     color: #000;
+}
+
+.food-modal__order-btn:hover:not(:disabled) {
+     background: #eee;
+}
+
+.food-modal__order-btn:disabled {
+     opacity: 0.5;
+     cursor: not-allowed;
+}
+
+.food-modal__loader {
+     display: inline-block;
+     width: 16px;
+     height: 16px;
+     border: 2px solid #000;
+     border-bottom-color: transparent;
+     border-radius: 50%;
+     animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+     0% {
+          transform: rotate(0deg);
+     }
+
+     100% {
+          transform: rotate(360deg);
+     }
+}
+
+@media (max-width: 768px) {
+     .food-modal {
+          width: 95%;
+          padding: 15px;
+     }
+
+     .food-modal__grid {
+          grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+     }
+}
+
+@media (max-width: 480px) {
+     .food-modal__categories-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+     }
+
+     .food-modal__category-btn {
+          padding: 8px;
+          font-size: 12px;
+     }
+
+     .food-modal__grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+     }
+
+     .food-modal__item {
+          padding: 8px;
+     }
+
+     .food-modal__image {
+          width: 50px;
+          height: 50px;
+     }
+
+     .food-modal__name {
+          font-size: 12px;
+     }
+
+     .food-modal__price {
+          font-size: 10px;
+     }
+
+     .food-modal__controls {
+          gap: 8px;
+          /* Уменьшили обратно для мобильных */
+     }
+
+     .food-modal__control-btn {
+          width: 22px;
+          /* Чуть меньше для мобильных */
+          height: 22px;
+          font-size: 14px;
+          /* Чуть меньше шрифт */
+     }
+
+     .food-modal__count {
+          font-size: 12px;
+     }
+}

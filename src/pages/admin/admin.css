@@ -1,0 +1,268 @@
+/* admin.css */
+#debt_button {
+  /* margin-right: 440px; */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* width: 220px; */
+}
+
+/* Page container */
+.page {
+  padding: 20px;
+  font-family: "Arial", sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  align-items: center;
+}
+
+/* Page header styling */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  /* overflow: scroll; */
+}
+
+.page-header h1 {
+  font-size: 24px;
+  color: #333;
+}
+
+.btn {
+  padding: 10px 20px;
+  background-color: #1677FF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  /* margin-left: 330px; */
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* Table styling */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: scroll;
+}
+
+.table th,
+.table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.table th {
+  color: #fff;
+}
+
+/* Modal styling */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal.active {
+  display: flex;
+  padding-top: 50px;
+
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 600px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: auto;
+  overflow: scroll;
+  scrollbar-width: none; /* Firefox uchun scrollbarsni yashirish */
+}
+
+.modal-content::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, va Opera uchun scrollbarsni yashirish */
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h1 {
+  font-size: 20px;
+  color: #333;
+}
+#print {
+  padding: 10px;
+  background-color: #1677FF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.form label {
+  margin-bottom: 15px;
+  width: calc(50% - 10px); /* Input va selectlarni yarmiga bo'lish */
+}
+
+.form label span {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.form input[type="text"],
+.form input[type="number"],
+.form select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #333;
+}
+
+.form input[type="text"]:focus,
+.form input[type="number"]:focus,
+.form select:focus {
+  outline: none;
+  border-color: #1677FF;
+}
+
+.btn-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn-group button {
+  padding: 10px 20px;
+  background-color: #1677FF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-group button:hover {
+  background-color: #0056b3;
+}
+
+.btn-group .btn:first-child {
+  background-color: #6c757d;
+}
+
+.btn-group .btn:first-child:hover {
+  background-color: #5a6268;
+}
+
+/* admin.css */
+
+td > button {
+  margin-right: 10px;
+  padding: 5px 10px;
+  background-color: #1677FF;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+td :nth-child(2) {
+  margin-right: 0px;
+  padding: 5px 10px;
+  background-color: red;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+td > #barcode {
+  margin-right: 0px;
+  padding: 5px 10px;
+  background-color: black;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#barcodesvg {
+  width: 450px;
+  height: 230px;
+}
+
+.totalprice {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+}
+#printable-barcode {
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column-reverse;
+}
+#printable-barcode > svg {
+  width: 15cm;
+  height: 8cm;
+}
+
+.product-info {
+  display: flex;
+  gap: 20px;
+  font-weight: bold;
+}
