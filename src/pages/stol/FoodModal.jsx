@@ -72,9 +72,9 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                workerId,
           };
 
-          axios.post('http://localhost:5000/api/orders/create', orderData)
+          axios.post('https://restaurant-server-xd9o.vercel.app/api/orders/create', orderData)
                .then(response => {
-                    axios.get(`http://localhost:5000/api/orders/bill/${table._id}`)
+                    axios.get(`https://restaurant-server-xd9o.vercel.app/api/orders/bill/${table._id}`)
                          .then(() => {
                               setLoading(false);
                               setOrderComplete(true);
