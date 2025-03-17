@@ -330,6 +330,7 @@
      color: #d0d0d0;
      margin-bottom: 6px;
      line-height: 1.4;
+               font-family: "Inter Medium";
 }
 
 .food-modal__order-footer {
@@ -344,6 +345,7 @@
      font-size: 14px;
      font-weight: 500;
      color: #ffffff;
+          font-family: "Inter Medium";
 }
 
 .food-modal__bill-btn {
@@ -415,4 +417,8 @@
           padding: 4px 8px;
           font-size: 10px;
      }
+}
+.food-modal__worker-name {
+     color: white;
+     text-transform: capitalize;
 }

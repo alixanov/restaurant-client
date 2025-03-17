@@ -4,8 +4,6 @@
      background-color: #000;
      color: #fff;
      padding: 20px;
-     font-family: 'Roboto', sans-serif;
-     /* Эстетичный шрифт */
      width: 100%;
 }
 
@@ -15,7 +13,6 @@
      align-items: center;
      justify-content: space-between;
      margin-bottom: 30px;
-     /* Увеличил отступ для гармонии */
 }
 
 .stol__title {
@@ -25,8 +22,7 @@
      text-transform: uppercase;
      letter-spacing: 2px;
      margin: 0;
-     /* Убрал лишние отступы */
-}
+     font-family: "Inter SemiBold";}
 
 .stol__worker__btn {
      display: flex;
@@ -50,6 +46,7 @@
 .stol__worker__btn-text {
      display: inline;
      /* Текст виден по умолчанию */
+               font-family: "Inter Medium";
 }
 
 .stol__worker__btn-icon {
@@ -100,6 +97,7 @@
 
 .stol__number {
      font-size: 18px;
+               font-family: "Inter Medium";
      font-weight: 500;
 }
 
@@ -123,6 +121,7 @@
 .stol__capacity {
      font-size: 14px;
      opacity: 0.8;
+               font-family: "Inter Medium";
 }
 
 /* Медиа-запросы для мобильных устройств */

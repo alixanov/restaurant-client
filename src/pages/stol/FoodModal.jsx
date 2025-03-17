@@ -272,7 +272,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                          </button>
                     </div>
                     <div className="food-modal__worker-info">
-                         <span className="food-modal__worker-name">Официант: {workerName}</span>
+                         <span className="food-modal__worker-name">Имя: {workerName}</span>
                     </div>
 
                     {/* Отображение всех активных заказов как одного списка */}

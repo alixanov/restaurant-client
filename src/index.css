@@ -1,11 +1,16 @@
 @font-face {
-     src: url(../src/fonts/Lora-Regular.ttf);
-     font-family: "Lora-Regular";
+     src: url(../src/fonts/Inter_18pt-SemiBold.ttf);
+     font-family: "Inter SemiBold";
 }
 
 @font-face {
-     src: url(../src/fonts/Montserrat-Regular.ttf);
-     font-family: "Lora-Regular";
+     src: url(../src/fonts/Inter_18pt-Regular.ttf);
+     font-family: "Inter Regular";
+}
+
+@font-face {
+     src: url(../src/fonts/Inter_18pt-Medium.ttf);
+     font-family: "Inter Medium";
 }
 
 * {
@@ -14,7 +19,7 @@
      box-sizing: border-box;
      overscroll-behavior: none;
      -webkit-tap-highlight-color: transparent;
-     font-family: "Montserrat-Regular";
+     font-family: "Inter Medium";
 }
 
 a {
