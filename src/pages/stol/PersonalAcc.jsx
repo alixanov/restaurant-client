@@ -39,8 +39,8 @@ const PersonalAcc = () => {
           }
 
           Promise.all([
-               axios.get('https://restaurant-server-xd9o.vercel.app/api/orders/sales'),
-               axios.get(`https://restaurant-server-xd9o.vercel.app/api/orders/worker/${workerId}`),
+               axios.get('http://localhost:5000/api/orders/sales'),
+               axios.get(`http://localhost:5000/api/orders/worker/${workerId}`),
           ])
                .then(([salesResponse, ordersResponse]) => {
                     const { totalSales, orderCount } = salesResponse.data;
