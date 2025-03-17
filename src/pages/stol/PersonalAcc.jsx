@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom'; // Добавлен useNavigate для перенаправления
+import { Link, useNavigate } from 'react-router-dom';
 import '../stol/personal-acc.css';
 import { jwtDecode } from 'jwt-decode';
 import closeTokenIcon from '../../assets/close-token-icon.png';
@@ -8,119 +8,91 @@ import { apiSlice } from "../../context/service/api.service";
 import { useDispatch } from "react-redux";
 
 const PersonalAcc = () => {
-     const [salesData, setSalesData] = useState({
-          totalSales: 0,
-          orderCount: 0,
+     const [userData, setUserData] = useState({
+          username: '',
+          revenue: 0,
+          ordersCount: 0,
      });
-     const [orders, setOrders] = useState([]);
      const [loading, setLoading] = useState(true);
-     const navigate = useNavigate(); // Для перенаправления
+     const navigate = useNavigate();
      const dispatch = useDispatch();
-     
 
-     useEffect(() => {
-          const token = JSON.parse(localStorage.getItem('access_token'));
-          if (!token) {
-               console.error('Access token не найден');
-               setLoading(false);
-               return;
-          }
-
-
-          
-          let workerId;
+     const fetchUserData = useCallback(async (token) => {
           try {
                const decodedToken = jwtDecode(token);
-               workerId = decodedToken.id;
+               const workerId = decodedToken.id;
+
+               const response = await axios.get('http://localhost:5000/api/sales/report', {
+                    headers: { Authorization: `Bearer ${token}` },
+               });
+
+               const { innerData } = response.data;
+               const workerData = innerData.workerReport.find(
+                    (worker) => worker.workerId === workerId
+               ) || { revenue: 0, ordersCount: 0 };
+
+               setUserData({
+                    username: decodedToken.login,
+                    revenue: workerData.revenue,
+                    ordersCount: workerData.ordersCount,
+               });
           } catch (error) {
-               console.error('Ошибка декодирования токена:', error);
+               console.error('Ошибка загрузки данных:', error);
+               navigate('/login'); // Перенаправляем на /login вместо /
+          } finally {
                setLoading(false);
+          }
+     }, [navigate]);
+
+     useEffect(() => {
+          const token = localStorage.getItem('access_token');
+          if (!token) {
+               navigate('/login'); // Перенаправляем на /login вместо /
                return;
           }
+          fetchUserData(token);
+     }, [fetchUserData, navigate]);
 
-          Promise.all([
-               axios.get('http://localhost:5000/api/orders/sales'),
-               axios.get(`http://localhost:5000/api/orders/worker/${workerId}`),
-          ])
-               .then(([salesResponse, ordersResponse]) => {
-                    const { totalSales, orderCount } = salesResponse.data;
-                    setSalesData({ totalSales, orderCount });
-                    setOrders(ordersResponse.data.innerData || []);
-                    setLoading(false);
-               })
-               .catch((error) => {
-                    console.error('Ошибка загрузки данных:', error);
-                    setLoading(false);
-               });
-     }, []);
-
-       const logout = useCallback(() => {
-         localStorage.clear();
-         dispatch(apiSlice.util.resetApiState());
-         window.location.reload();
-       }, [dispatch, navigate]);
-
-
+     const logout = useCallback(() => {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('role'); // Удаляем роль, чтобы избежать конфликтов
+          dispatch(apiSlice.util.resetApiState());
+          navigate('/login', { replace: true }); // Перенаправляем на /login
+     }, [dispatch, navigate]);
 
      return (
-          <div className="personal__acc__container">
-               <Link className="personal__acc__btn__home" to="/stol">
-                    ←
-               </Link>
-
-               <Link className="personal__acc__btn__close"  onClick={logout}>
-                    <span className="personal__acc__btn__close-text">Выйти</span>
-                    <img
-                         src={closeTokenIcon}
-                         alt="Logout"
-                         className="personal__acc__btn__close-icon"
-                    />
-               </Link>
-               <p></p>
-
-               <h1 className="personal__acc__title">Личный кабинет</h1>
-               <div className="personal__acc__content">
+          <div className="personal-acc-container">
+               <header className="personal-acc-header">
+                    <Link to="/stol" className="personal-acc-btn personal-acc-btn-home">←</Link>
+                    <button onClick={logout} className="personal-acc-btn personal-acc-btn-logout">
+                         <span className="personal-acc-btn-text">Выйти</span>
+                         <img src={closeTokenIcon} alt="Logout" className="personal-acc-btn-icon" />
+                    </button>
+               </header>
+               <main className="personal-acc-main">
+                    <h1 className="personal-acc-title">Личный кабинет</h1>
                     {loading ? (
-                         <div className="personal__acc__loader">Загрузка...</div>
+                         <div className="personal-acc-loader">Загрузка...</div>
                     ) : (
-                         <>
-                              <div className="personal__acc__stats">
-                                   <div className="personal__acc__card personal__acc__card--revenue">
-                                        <span className="personal__acc__label">Общая выручка</span>
-                                        <span className="personal__acc__value">
-                                             {salesData.totalSales.toLocaleString()} сум
+                         <div className="personal-acc-content">
+                              <section className="personal-acc-user-info">
+                                   <span className="personal-acc-username">{userData.username}</span>
+                              </section>
+                              <section className="personal-acc-stats">
+                                   <div className="personal-acc-card personal-acc-card-revenue">
+                                        <span className="personal-acc-label">Выручка</span>
+                                        <span className="personal-acc-value">
+                                             {userData.revenue.toLocaleString()} сум
                                         </span>
                                    </div>
-                                   <div className="personal__acc__card">
-                                        <span className="personal__acc__label">Количество заказов</span>
-                                        <span className="personal__acc__value">{salesData.orderCount}</span>
+                                   <div className="personal-acc-card">
+                                        <span className="personal-acc-label">Заказы</span>
+                                        <span className="personal-acc-value">{userData.ordersCount}</span>
                                    </div>
-                              </div>
-                              <div className="personal__acc__orders">
-                                   <h2 className="personal__acc__orders-title">Ваши заказы</h2>
-                                   {orders.length > 0 ? (
-                                        orders.map((order) => (
-                                             <div key={order._id} className="personal__acc__order-card">
-                                                  <span className="personal__acc__order-table">
-                                                       Стол #{order.tableNumber}
-                                                  </span>
-                                                  <ul className="personal__acc__order-items">
-                                                       {order.foods.map((item, index) => (
-                                                            <li key={index} className="personal__acc__order-item">
-                                                                 {item.food.name} x{item.quantity} -{' '}
-                                                                 {(item.food.price * item.quantity).toLocaleString()} сум
-                                                            </li>
-                                                       ))}
-                                                  </ul>
-                                             </div>
-                                        ))
-                                   ) : (
-                                        <p className="personal__acc__no-orders">Нет активных заказов</p>
-                                   )}
-                              </div>
-                         </>
+                              </section>
+                         </div>
                     )}
-               </div>
+               </main>
           </div>
      );
 };

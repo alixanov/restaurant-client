@@ -208,15 +208,20 @@
 
 
 
-.stol__card.occupied-by-other {
-     background: linear-gradient(135deg, #4a1e1e, #2a1a1a);
-     border: 2px solid #ff4444;
-     /* Красная рамка для предупреждения */
+.stol__card.locked {
+     background: rgba(80, 20, 20, 0.8);
+     /* Тёмно-красный фон для заблокированных столов */
+     cursor: not-allowed;
      opacity: 0.8;
 }
 
-.stol__occupied-by {
-     font-size: 12px;
-     color: #ff4444;
-     margin-top: 5px;
+.stol__card.locked .stol__status {
+     color: #ff6666;
+     /* Красный цвет статуса */
+}
+
+.stol__card.locked .stol__occupied-by {
+     color: #ff9999;
+     /* Светло-красный для текста */
+     font-weight: 500;
 }

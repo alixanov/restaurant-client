@@ -13,21 +13,18 @@ export const Login = memo(() => {
     const value = Object.fromEntries(new FormData(e.target));
 
     try {
-      await axios
-        .post("http://localhost:5000/api/login", value)
-        .then((res) => {
-          console.log(res);
-          const token = res.data?.innerData.token;
-          const role = res.data?.innerData?.worker?.role;
-          localStorage.setItem("access_token", JSON.stringify(token));
-          localStorage.setItem("role", role);
-          // Добавляем искусственную задержку в 1.5 секунды для видимости лоадера
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        });
+      const res = await axios.post("http://localhost:5000/api/login", value);
+      console.log(res);
+      const token = res.data?.innerData.token;
+      const role = res.data?.innerData?.worker?.role;
+      localStorage.setItem("access_token", JSON.stringify(token));
+      localStorage.setItem("role", role);
+      setTimeout(() => {
+        setIsLoading(false);
+        navigate('/', { replace: true }); // Перенаправляем на главную страницу
+      }, 1500);
     } catch (error) {
-      console.error("API xatosi:", error.response?.data || error.message);
+      console.error("API xатosi:", error.response?.data || error.message);
       setTimeout(() => {
         setIsLoading(false);
       }, 1500);
@@ -47,7 +44,6 @@ export const Login = memo(() => {
             required
           />
         </label>
-
         <label>
           <input
             type="password"
@@ -56,7 +52,6 @@ export const Login = memo(() => {
             required
           />
         </label>
-
         <label>
           <button type="submit" disabled={isLoading}>
             {isLoading ? (

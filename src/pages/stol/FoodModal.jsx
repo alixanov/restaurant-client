@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 import { io } from "socket.io-client";
 import "./food-modal.css";
 
-// Инициализация сокета вне компонента для немедленного подключения
 const socket = io(`http://localhost:${process.env.PORT || 5000}`, {
      transports: ["websocket"],
      cors: {
@@ -21,6 +20,8 @@ const FoodModal = ({ isOpen, onClose, table }) => {
      const [selectedFoods, setSelectedFoods] = useState([]);
      const [loading, setLoading] = useState(false);
      const [orderComplete, setOrderComplete] = useState(false);
+     const [workerName, setWorkerName] = useState("");
+     const [activeOrders, setActiveOrders] = useState([]);
 
      useEffect(() => {
           if (!socket.connected) {
@@ -28,8 +29,26 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           }
 
           if (isOpen) {
+               const token = JSON.parse(localStorage.getItem("access_token"));
+               if (!token) {
+                    console.error("Токен доступа не найден");
+                    return;
+               }
+
+               let workerId;
+               try {
+                    const decodedToken = jwtDecode(token);
+                    setWorkerName(decodedToken.login);
+                    workerId = decodedToken.id;
+               } catch (error) {
+                    console.error("Ошибка декодирования токена:", error);
+                    return;
+               }
+
                axios
-                    .get("http://localhost:5000/api/foods/all")
+                    .get("http://localhost:5000/api/foods/all", {
+                         headers: { Authorization: `Bearer ${token}` },
+                    })
                     .then((response) => {
                          const allFoods = response.data.innerData;
                          const uniqueCategories = [...new Set(allFoods.map((food) => food.category))];
@@ -37,16 +56,24 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                          setCategories(uniqueCategories);
                     })
                     .catch((error) => console.error("Ошибка загрузки блюд:", error));
+
+               axios
+                    .get(`http://localhost:5000/api/orders/table/${table._id}`, {
+                         headers: { Authorization: `Bearer ${token}` },
+                    })
+                    .then((response) => {
+                         setActiveOrders(response.data.innerData || []);
+                    })
+                    .catch((error) => console.error("Ошибка загрузки заказов:", error));
           }
 
           const handleConnect = () => console.log("Socket подключён в FoodModal");
-
           const handleNewOrder = (order) => {
                if (order.table === table?._id) {
                     console.log("Новый заказ принят:", order);
+                    setActiveOrders((prev) => [...prev, order]);
                }
           };
-
           const handleTableStatus = ({ tableId, isActive }) => {
                if (tableId === table?._id) {
                     console.log(`Статус стола #${table.number}: ${isActive ? "Активен" : "Свободен"}`);
@@ -55,12 +82,12 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                          setTimeout(() => {
                               setOrderComplete(false);
                               setSelectedFoods([]);
+                              setActiveOrders([]);
                               onClose();
                          }, 1500);
                     }
                }
           };
-
           const handleBillGenerated = (data) => {
                if (data.tableId === table?._id) {
                     console.log("Счёт готов:", data);
@@ -69,17 +96,24 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                     setTimeout(() => {
                          setOrderComplete(false);
                          setSelectedFoods([]);
+                         setActiveOrders([]);
                          onClose();
                     }, 1500);
                }
           };
-
+          const handleOrderClosed = (order) => {
+               if (order.table._id === table?._id) {
+                    console.log("Заказ закрыт:", order);
+                    setActiveOrders((prev) => prev.filter((o) => o._id !== order._id));
+               }
+          };
           const handleConnectError = (err) => console.error("Ошибка сокета:", err);
 
           socket.on("connect", handleConnect);
           socket.on("new_order", handleNewOrder);
           socket.on("table_status", handleTableStatus);
           socket.on("bill_generated", handleBillGenerated);
+          socket.on("order_closed", handleOrderClosed);
           socket.on("connect_error", handleConnectError);
 
           return () => {
@@ -87,6 +121,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                socket.off("new_order", handleNewOrder);
                socket.off("table_status", handleTableStatus);
                socket.off("bill_generated", handleBillGenerated);
+               socket.off("order_closed", handleOrderClosed);
                socket.off("connect_error", handleConnectError);
           };
      }, [isOpen, table, onClose]);
@@ -144,9 +179,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
 
           axios
                .post("http://localhost:5000/api/orders/create", orderData, {
-                    headers: {
-                         Authorization: `Bearer ${token}`,
-                    },
+                    headers: { Authorization: `Bearer ${token}` },
                })
                .then((response) => {
                     console.log("Заказ успешно отправлен:", response.data);
@@ -155,13 +188,76 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                     setTimeout(() => {
                          setOrderComplete(false);
                          setSelectedFoods([]);
-                         onClose();
                     }, 1500);
                })
                .catch((error) => {
                     console.error("Ошибка создания заказа:", error.response?.data || error.message);
                     setLoading(false);
                });
+     };
+
+     const handleCloseAllOrders = async () => {
+          setLoading(true);
+          const token = JSON.parse(localStorage.getItem("access_token"));
+          if (!token) {
+               console.error("Токен доступа не найден");
+               setLoading(false);
+               return;
+          }
+
+          let workerId;
+          try {
+               const decodedToken = jwtDecode(token);
+               workerId = decodedToken.id;
+          } catch (error) {
+               console.error("Ошибка декодирования токена:", error);
+               setLoading(false);
+               return;
+          }
+
+          try {
+               // Закрываем все заказы последовательно
+               for (const order of activeOrders) {
+                    await axios.post(
+                         `http://localhost:5000/api/orders/close/${order._id}`,
+                         { workerId },
+                         { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    console.log(`Заказ ${order._id} успешно закрыт`);
+               }
+               setLoading(false);
+               setOrderComplete(true);
+               setTimeout(() => {
+                    setOrderComplete(false);
+               }, 1500);
+          } catch (error) {
+               console.error("Ошибка закрытия заказов:", error.response?.data || error.message);
+               setLoading(false);
+          }
+     };
+
+     // Функция для объединения всех продуктов из всех заказов
+     const aggregateAllOrderItems = () => {
+          // Собираем все продукты из всех заказов в один массив
+          const allItems = activeOrders.flatMap((order) => order.foods);
+
+          // Объединяем дубликаты
+          const aggregated = allItems.reduce((acc, item) => {
+               const existingItem = acc.find((i) => i.food._id === item.food._id);
+               if (existingItem) {
+                    existingItem.quantity += item.quantity;
+               } else {
+                    acc.push({ ...item });
+               }
+               return acc;
+          }, []);
+
+          return aggregated;
+     };
+
+     // Вычисляем общую сумму всех заказов
+     const calculateTotalPrice = () => {
+          return activeOrders.reduce((total, order) => total + order.totalPrice, 0);
      };
 
      if (!isOpen || !table) return null;
@@ -175,6 +271,40 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                               ×
                          </button>
                     </div>
+                    <div className="food-modal__worker-info">
+                         <span className="food-modal__worker-name">Официант: {workerName}</span>
+                    </div>
+
+                    {/* Отображение всех активных заказов как одного списка */}
+                    {activeOrders.length > 0 && (
+                         <div className="food-modal__active-orders">
+                              <h3 className="food-modal__subtitle">Активные заказы</h3>
+                              <div className="food-modal__order">
+                                   <div className="food-modal__order-content">
+                                        <ul className="food-modal__order-items">
+                                             {aggregateAllOrderItems().map((item, index) => (
+                                                  <li key={index}>
+                                                       {item.food.name} × {item.quantity} —{" "}
+                                                       {(item.food.price * item.quantity).toLocaleString()} сум
+                                                  </li>
+                                             ))}
+                                        </ul>
+                                        <div className="food-modal__order-footer">
+                                             <span className="food-modal__order-total">
+                                                  Итого: {calculateTotalPrice().toLocaleString()} сум
+                                             </span>
+                                             <button
+                                                  className="food-modal__bill-btn"
+                                                  onClick={handleCloseAllOrders}
+                                                  disabled={loading}
+                                             >
+                                                  Закрыть
+                                             </button>
+                                        </div>
+                                   </div>
+                              </div>
+                         </div>
+                    )}
 
                     {!selectedCategory ? (
                          <div className="food-modal__categories">

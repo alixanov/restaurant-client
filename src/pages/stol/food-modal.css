@@ -289,15 +289,130 @@
           /* Уменьшили обратно для мобильных */
      }
 
-     .food-modal__control-btn {
-          width: 22px;
-          /* Чуть меньше для мобильных */
-          height: 22px;
-          font-size: 14px;
-          /* Чуть меньше шрифт */
+}
+
+
+/* Стили для активных заказов */
+.food-modal__active-orders {
+     margin: 16px 0;
+     padding: 0;
+}
+
+.food-modal__subtitle {
+     font-size: 16px;
+     font-weight: 500;
+     margin: 0 0 12px;
+     color: #e0e0e0;
+}
+
+.food-modal__order {
+     background: rgba(40, 40, 40, 0.9);
+     border-radius: 8px;
+     padding: 12px;
+     margin-bottom: 12px;
+     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.food-modal__order-content {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
+}
+
+.food-modal__order-items {
+     list-style: none;
+     padding: 0;
+     margin: 0;
+}
+
+.food-modal__order-items li {
+     font-size: 14px;
+     color: #d0d0d0;
+     margin-bottom: 6px;
+     line-height: 1.4;
+}
+
+.food-modal__order-footer {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding-top: 8px;
+     border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.food-modal__order-total {
+     font-size: 14px;
+     font-weight: 500;
+     color: #ffffff;
+}
+
+.food-modal__bill-btn {
+     background: #4a1e1e;
+     border: none;
+     border-radius: 6px;
+     padding: 6px 12px;
+     color: #fff;
+     font-size: 12px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: background 0.2s ease;
+}
+
+.food-modal__bill-btn:hover:not(:disabled) {
+     background: #5a2e2e;
+}
+
+.food-modal__bill-btn:disabled {
+     opacity: 0.5;
+     cursor: not-allowed;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+     .food-modal__active-orders {
+          margin: 12px 0;
      }
 
-     .food-modal__count {
+     .food-modal__order {
+          padding: 10px;
+          margin-bottom: 10px;
+     }
+
+     .food-modal__subtitle {
+          font-size: 14px;
+          margin-bottom: 10px;
+     }
+
+     .food-modal__order-items li {
           font-size: 12px;
+          margin-bottom: 4px;
+     }
+
+     .food-modal__order-total {
+          font-size: 12px;
+     }
+
+     .food-modal__bill-btn {
+          padding: 5px 10px;
+          font-size: 11px;
+     }
+}
+
+@media (max-width: 480px) {
+     .food-modal__order {
+          padding: 8px;
+     }
+
+     .food-modal__order-items li {
+          font-size: 11px;
+     }
+
+     .food-modal__order-total {
+          font-size: 11px;
+     }
+
+     .food-modal__bill-btn {
+          padding: 4px 8px;
+          font-size: 10px;
      }
 }
