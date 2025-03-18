@@ -94,11 +94,15 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           };
           const handleTableStatus = ({ tableId, isActive, workerId: tableWorkerId }) => {
                if (tableId === table?._id) {
-                    const workerIdStr = tableWorkerId ? (typeof tableWorkerId === 'object' ? tableWorkerId._id?.toString() : tableWorkerId.toString()) : null;
+                    const workerIdStr = tableWorkerId
+                         ? typeof tableWorkerId === "object"
+                              ? tableWorkerId._id?.toString()
+                              : tableWorkerId.toString()
+                         : null;
                     setIsTableLocked(
                          isActive &&
                          workerIdStr &&
-                         workerIdStr !== (workerId?.toString() || '')
+                         workerIdStr !== (workerId?.toString() || "")
                     );
                     if (!isActive) {
                          setOrderComplete(true);
@@ -236,28 +240,52 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           if (!token) {
                console.error("Токен доступа не найден");
                setLoading(false);
-               return ;
-          }
-
-          let currentWorkerId;
-          try {
-               const decodedToken = jwtDecode(token);
-               currentWorkerId = decodedToken.id;
-          } catch (error) {
-               console.error("Ошибка декодирования токена:", error);
-               setLoading(false);
                return;
           }
 
           try {
-               for (const order of activeOrders) {
-                    await axios.post(
+               const decodedToken = jwtDecode(token);
+               const currentWorkerId = decodedToken.id;
+
+               // Закрываем все заказы по одному
+               const closePromises = activeOrders.map((order) =>
+                    axios.post(
                          `http://localhost:5000/api/orders/close/${order._id}`,
                          { workerId: currentWorkerId },
                          { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    console.log(`Заказ ${order._id} успешно закрыт`);
+                    )
+               );
+               await Promise.all(closePromises);
+               activeOrders.forEach((order) => console.log(`Заказ ${order._id} успешно закрыт`));
+
+               // Отправляем запрос на печать одного чека после всех закрытий
+               if (activeOrders.length > 0) {
+                    const items = aggregateAllOrderItems();
+                    const total = calculateTotalPrice();
+                    try {
+                         await axios.post(
+                              `http://localhost:5000/api/print-all-receipts`, // Новый эндпоинт
+                              {
+                                   tableId: table._id,
+                                   items: items.map((item) => ({
+                                        food: {
+                                             _id: item.food._id,
+                                             name: item.food.name,
+                                             price: item.food.price,
+                                             category: item.food.category,
+                                        },
+                                        quantity: item.quantity,
+                                   })),
+                                   total,
+                              },
+                              { headers: { Authorization: `Bearer ${token}` } }
+                         );
+                         console.log("Запрос на печать одного чека отправлен с total:", total);
+                    } catch (printError) {
+                         console.error("Ошибка при отправке запроса на печать:", printError);
+                    }
                }
+
                setLoading(false);
                setOrderComplete(true);
                setTimeout(() => {
@@ -267,6 +295,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           } catch (error) {
                console.error("Ошибка закрытия заказов:", error.response?.data || error.message);
                setLoading(false);
+               alert("Произошла ошибка при закрытии заказов");
           }
      };
 
