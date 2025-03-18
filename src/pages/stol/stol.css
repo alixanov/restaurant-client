@@ -1,146 +1,170 @@
-/* stol.css */
 .stol {
-     min-height: 100vh;
-     background-color: #000;
-     color: #fff;
-     padding: 20px;
      width: 100%;
+     min-height: 100vh;
+     padding: 20px;
+     color: #ffffff;
+     background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
 }
 
-.stol__header___title {
-     width: 100%;
+.stol__header {
      display: flex;
-     align-items: center;
      justify-content: space-between;
+     align-items: center;
      margin-bottom: 30px;
+     padding: 15px;
+     background: rgba(30, 30, 30, 0.9);
+     border-radius: 12px;
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .stol__title {
-     font-size: 24px;
-     font-weight: 400;
-     text-align: center;
-     text-transform: uppercase;
-     letter-spacing: 2px;
+     font-size: 28px;
+     font-weight: 600;
+     letter-spacing: 1px;
      margin: 0;
-     font-family: "Inter SemiBold";}
+}
 
-.stol__worker__btn {
+.stol__worker-btn {
      display: flex;
      align-items: center;
-     justify-content: center;
-     width: 140px;
-     height: 35px;
-     background-color: #fff;
-     color: #000;
-     border-radius: 12px;
+     gap: 8px;
+     padding: 8px 15px;
+     background: white;
+     border-radius: 8px;
      text-decoration: none;
-     font-size: 14px;
-     transition: background 0.2s ease, transform 0.2s ease;
+     color: #222222;
+     transition: background 0.3s ease;
 }
 
-.stol__worker__btn:hover {
-     background: #eeeeeea8;
-     transform: translateY(-1px);
+.stol__worker-btn:hover {
+     background: #444444;
 }
 
-.stol__worker__btn-text {
-     display: inline;
-     /* Текст виден по умолчанию */
-               font-family: "Inter Medium";
-}
-
-.stol__worker__btn-icon {
-     display: none;
-     /* Иконка скрыта по умолчанию */
+.stol__worker-icon {
      width: 24px;
      height: 24px;
-     object-fit: contain;
+     filter: invert(1);
+}
+
+.stol__worker-text {
+     font-size: 14px;
 }
 
 .stol__grid {
      display: grid;
-     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
      gap: 20px;
-     width: 100%;
-     margin: 0 auto;
+     padding: 0 10px;
 }
 
 .stol__card {
-     /* background-color: #1a1a1a; */
-     background: linear-gradient(135deg, #1a3c34, #2a6041);
-     border: 1px solid #333;
-     border-radius: 8px;
-     padding: 15px;
+     padding: 20px;
+     border-radius: 12px;
      cursor: pointer;
-     transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.stol__card.occupied {
-     background: linear-gradient(135deg, #4a1e1e, #2a1a1a);
-}
-
-.stol__card.free {
-     background-color: #1a1a1a;
+     transition: transform 0.2s ease, box-shadow 0.2s ease;
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .stol__card:hover {
-     transform: translateY(-2px);
-     border-color: #fff;
+     transform: translateY(-5px);
+     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+     border: solid 1px white;
 }
+
+.stol__card.free {
+     background: linear-gradient(135deg, #2a6041, #1a3c34);
+}
+
+.stol__card.occupied {
+     background: linear-gradient(135deg, #5c2a2a, #3a1c1c);
+}
+
+.stol__card.mine {
+/* background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); */
+background: linear-gradient(120deg, #434343 0%, #000000 100%);
+}
+
+.stol__card.locked {
+     opacity: 0.7;
+     cursor: not-allowed;
+     border-radius: 20px;
+}
+
 
 .stol__card-header {
      display: flex;
      justify-content: space-between;
      align-items: center;
-     margin-bottom: 10px;
+     margin-bottom: 15px;
 }
 
 .stol__number {
      font-size: 18px;
-               font-family: "Inter Medium";
-     font-weight: 500;
+     font-weight: 600;
 }
 
 .stol__status {
-     font-size: 12px;
+     font-size: 14px;
      padding: 4px 8px;
      border-radius: 12px;
+     background: rgba(255, 255, 255, 0.1);
 }
 
-.stol__status.free {
-
-     background-color: #fff;
-     color: #000;
-}
-
-.stol__status.occupied {
-     background-color: #000;
-     color: #fff;
+.stol__card-body {
+     display: flex;
+     flex-direction: column;
+     gap: 8px;
 }
 
 .stol__capacity {
+     font-size: 16px;
+     opacity: 0.9;
+}
+
+.stol__occupied-by {
      font-size: 14px;
-     opacity: 0.8;
-               font-family: "Inter Medium";
+     color: #ff4444;
+     font-style: italic;
 }
 
 /* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
-     .stol {
-          padding: 15px;
+     .stol__header {
+          display: flex;
+          justify-content: space-between;
+          gap: 15px;
+          padding: 10px;
      }
 
      .stol__title {
-          font-size: 20px;
+          font-size: 24px;
+     }
+
+     .stol__worker-btn {
+          width: 40px;
+          height: 40px;
+          padding: 8px;
+          justify-content: center;
+          border-radius: 50%;
+     }
+
+     .stol__worker-text {
+          display: none;
+     }
+
+     .stol__worker-icon {
+          width: 24px;
+          height: 24px;
      }
 
      .stol__grid {
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
           gap: 15px;
+          padding: 0 5px;
      }
 
      .stol__card {
-          padding: 10px;
+          padding: 15px;
      }
 
      .stol__number {
@@ -148,79 +172,20 @@
      }
 
      .stol__capacity {
-          font-size: 12px;
+          font-size: 14px;
      }
 }
 
 @media (max-width: 480px) {
-     .stol__header___title {
-          margin-bottom: 20px;
+     .stol {
+          padding: 10px;
      }
 
      .stol__title {
-          font-size: 18px;
-     }
-
-     .stol__worker__btn {
-          width: 40px;
-          /* Уменьшаем до размера иконки */
-          height: 40px;
-          border-radius: 50%;
-          /* Круглая кнопка */
-          background: #1a1a1a;
-          /* Тёмный фон для гармонии */
-          border: 1px solid #333;
-     }
-
-     .stol__worker__btn-text {
-          display: none;
-          /* Скрываем текст в мобильном режиме */
-     }
-
-     .stol__worker__btn-icon {
-          display: block;
-          /* Показываем иконку */
+          font-size: 20px;
      }
 
      .stol__grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
+          grid-template-columns: 1fr;
      }
-
-     .stol__card {
-          padding: 8px;
-     }
-
-     .stol__number {
-          font-size: 14px;
-     }
-
-     .stol__status {
-          font-size: 10px;
-          padding: 3px 6px;
-     }
-
-     .stol__capacity {
-          font-size: 11px;
-     }
-}
-
-
-
-.stol__card.locked {
-     background: rgba(80, 20, 20, 0.8);
-     /* Тёмно-красный фон для заблокированных столов */
-     cursor: not-allowed;
-     opacity: 0.8;
-}
-
-.stol__card.locked .stol__status {
-     color: #ff6666;
-     /* Красный цвет статуса */
-}
-
-.stol__card.locked .stol__occupied-by {
-     color: #ff9999;
-     /* Светло-красный для текста */
-     font-weight: 500;
 }

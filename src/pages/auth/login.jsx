@@ -18,6 +18,7 @@ export const Login = memo(() => {
       const token = res.data?.innerData.token;
       const role = res.data?.innerData?.worker?.role;
       localStorage.setItem("access_token", JSON.stringify(token));
+      localStorage.setItem("waiter_id", JSON.stringify(res.data?.innerData?.worker._id));
       localStorage.setItem("role", role);
       setTimeout(() => {
         setIsLoading(false);
