@@ -5,16 +5,14 @@ import { io } from "socket.io-client";
 import "./food-modal.css";
 
 // Настройка Socket.io для подключения к серверу
-const socket = io("http://localhost:5000/", {
+const socket = io(`http://192.168.1.3:8080`, {
      transports: ["websocket"],
      cors: {
-          origin: "http://localhost:3000", // Клиентский домен
+          origin: "http://localhost:3000", // Убрали лишний слэш
           credentials: true,
      },
      autoConnect: true,
-     secure: true, // Используем HTTPS
 });
-
 const FoodModal = ({ isOpen, onClose, table }) => {
      const [foods, setFoods] = useState([]);
      const [categories, setCategories] = useState([]);
@@ -29,7 +27,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
 
      const fetchTableData = async (token, currentWorkerId) => {
           try {
-               const tableResponse = await axios.get(`http://localhost:5000/api/tables/${table._id}`, {
+               const tableResponse = await axios.get(`http://192.168.1.3:8080/api/tables/${table._id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                });
                const tableData = tableResponse.data.innerData;
@@ -40,7 +38,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                );
 
                const ordersResponse = await axios.get(
-                    `http://localhost:5000/api/orders/table/${table._id}?workerId=${currentWorkerId}`,
+                    `http://192.168.1.3:8080/api/orders/table/${table._id}?workerId=${currentWorkerId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                );
                setActiveOrders(ordersResponse.data.innerData || []);
@@ -75,7 +73,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                fetchTableData(token, currentWorkerId);
 
                axios
-                    .get("http://localhost:5000/api/foods/all", {
+                    .get("http://192.168.1.3:8080/api/foods/all", {
                          headers: { Authorization: `Bearer ${token}` },
                     })
                     .then((response) => {
@@ -220,7 +218,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           };
 
           axios
-               .post("http://localhost:5000/api/orders/create", orderData, {
+               .post("http://192.168.1.3:8000/api/orders", orderData, {
                     headers: { Authorization: `Bearer ${token}` },
                })
                .then((response) => {
@@ -254,7 +252,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                // Закрываем все заказы по одному
                const closePromises = activeOrders.map((order) =>
                     axios.post(
-                         `http://localhost:5000/api/orders/close/${order._id}`,
+                         `http://192.168.1.3:8080/api/orders/close/${order._id}`,
                          { workerId: currentWorkerId },
                          { headers: { Authorization: `Bearer ${token}` } }
                     )
@@ -268,7 +266,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                     const total = calculateTotalPrice();
                     try {
                          await axios.post(
-                              `http://localhost:5000/api/print-all-receipts`,
+                              `http://192.168.1.3:8080/api/print-all-receipts`,
                               {
                                    tableId: table._id,
                                    items: items.map((item) => ({

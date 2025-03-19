@@ -8,15 +8,14 @@ import { Link } from "react-router-dom";
 import personalAccIcon from "../../assets/personal-acc-icon.png";
 
 // Исправляем URL для Socket.io (порт указываем явно или через переменную окружения)
-const socket = io(`http://localhost:5000/:${process.env.REACT_APP_PORT || 5000}`, {
+const socket = io(`http://192.168.1.3:8080`, {
     transports: ["websocket"],
     cors: {
-        origin: ["http://localhost:3000/"], // Убираем дубликат
+        origin: "http://localhost:3000", // Убрали лишний слэш
         credentials: true,
     },
     autoConnect: true,
 });
-
 const Stol = () => {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(null);
@@ -26,7 +25,7 @@ const Stol = () => {
     // Функция для загрузки столов
     const fetchTables = async () => {
         try {
-            const response = await axios.get("http://localhost:5000/api/tables/all");
+            const response = await axios.get("http://192.168.1.3:8080/api/tables/all");
             setTables(response.data.innerData);
         } catch (error) {
             console.error("Ошибка загрузки столов:", error);
@@ -96,7 +95,7 @@ const Stol = () => {
         }
 
         try {
-            const response = await axios.get(`http://localhost:5000/api/tables/${table._id}`, {
+            const response = await axios.get(`http://192.168.1.3:8080/api/tables/${table._id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const tableData = response.data.innerData;
