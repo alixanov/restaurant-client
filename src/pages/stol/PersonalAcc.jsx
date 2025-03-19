@@ -22,7 +22,7 @@ const PersonalAcc = () => {
                const decodedToken = jwtDecode(token);
                const workerId = decodedToken.id;
 
-               const response = await axios.get('http://localhost:5000/api/sales/report', {
+               const response = await axios.get('https://cafe.abdujabborov.uz/api/sales/report', {
                     headers: { Authorization: `Bearer ${token}` },
                });
 

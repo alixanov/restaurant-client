@@ -4,13 +4,15 @@ import { jwtDecode } from "jwt-decode";
 import { io } from "socket.io-client";
 import "./food-modal.css";
 
-const socket = io(`http://localhost:${process.env.PORT || 5000}`, {
+// Настройка Socket.io для подключения к серверу
+const socket = io("https://cafe.abdujabborov.uz:5000", {
      transports: ["websocket"],
      cors: {
-          origin: ["http://localhost:3000", "http://localhost:3001"],
+          origin: "http://localhost:3000", // Клиентский домен
           credentials: true,
      },
      autoConnect: true,
+     secure: true, // Используем HTTPS
 });
 
 const FoodModal = ({ isOpen, onClose, table }) => {
@@ -27,7 +29,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
 
      const fetchTableData = async (token, currentWorkerId) => {
           try {
-               const tableResponse = await axios.get(`http://localhost:5000/api/tables/${table._id}`, {
+               const tableResponse = await axios.get(`https://cafe.abdujabborov.uz/api/tables/${table._id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                });
                const tableData = tableResponse.data.innerData;
@@ -38,7 +40,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                );
 
                const ordersResponse = await axios.get(
-                    `http://localhost:5000/api/orders/table/${table._id}?workerId=${currentWorkerId}`,
+                    `https://cafe.abdujabborov.uz/api/orders/table/${table._id}?workerId=${currentWorkerId}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                );
                setActiveOrders(ordersResponse.data.innerData || []);
@@ -73,7 +75,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                fetchTableData(token, currentWorkerId);
 
                axios
-                    .get("http://localhost:5000/api/foods/all", {
+                    .get("https://cafe.abdujabborov.uz/api/foods/all", {
                          headers: { Authorization: `Bearer ${token}` },
                     })
                     .then((response) => {
@@ -90,6 +92,8 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                if (order.table === table?._id) {
                     console.log("Новый заказ принят:", order);
                     setActiveOrders((prev) => [...prev, order]);
+                    // После получения нового заказа обновляем статус блокировки
+                    setIsTableLocked(false); // Стол теперь принадлежит текущему официанту
                }
           };
           const handleTableStatus = ({ tableId, isActive, workerId: tableWorkerId }) => {
@@ -216,7 +220,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
           };
 
           axios
-               .post("http://localhost:5000/api/orders/create", orderData, {
+               .post("https://cafe.abdujabborov.uz/api/orders/create", orderData, {
                     headers: { Authorization: `Bearer ${token}` },
                })
                .then((response) => {
@@ -250,7 +254,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                // Закрываем все заказы по одному
                const closePromises = activeOrders.map((order) =>
                     axios.post(
-                         `http://localhost:5000/api/orders/close/${order._id}`,
+                         `https://cafe.abdujabborov.uz/api/orders/close/${order._id}`,
                          { workerId: currentWorkerId },
                          { headers: { Authorization: `Bearer ${token}` } }
                     )
@@ -264,7 +268,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
                     const total = calculateTotalPrice();
                     try {
                          await axios.post(
-                              `http://localhost:5000/api/print-all-receipts`, // Новый эндпоинт
+                              `https://cafe.abdujabborov.uz/api/print-all-receipts`,
                               {
                                    tableId: table._id,
                                    items: items.map((item) => ({

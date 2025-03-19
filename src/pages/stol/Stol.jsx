@@ -1,19 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { io } from 'socket.io-client';
-import { jwtDecode } from 'jwt-decode';
-import './stol.css';
-import FoodModal from './FoodModal';
-import { Link } from 'react-router-dom';
-import personalAccIcon from '../../assets/personal-acc-icon.png';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { io } from "socket.io-client";
+import { jwtDecode } from "jwt-decode";
+import "./stol.css";
+import FoodModal from "./FoodModal";
+import { Link } from "react-router-dom";
+import personalAccIcon from "../../assets/personal-acc-icon.png";
 
-const socket = io(`http://localhost:${process.env.PORT || 5000}`, {
-    transports: ['websocket'],
+// Настройка Socket.io для подключения к серверу
+const socket = io("https://cafe.abdujabborov.uz:5000", {
+    transports: ["websocket"],
     cors: {
-        origin: ['http://localhost:3000', 'http://localhost:3001'],
+        origin: "http://localhost:3000", // Клиентский домен
         credentials: true,
     },
     autoConnect: true,
+    secure: true, // Используем HTTPS
 });
 
 const Stol = () => {
@@ -22,59 +24,102 @@ const Stol = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentWorkerId, setCurrentWorkerId] = useState(null);
 
+    // Функция для загрузки столов
+    const fetchTables = async () => {
+        try {
+            const response = await axios.get("https://cafe.abdujabborov.uz/api/tables/all");
+            setTables(response.data.innerData);
+        } catch (error) {
+            console.error("Ошибка загрузки столов:", error);
+        }
+    };
+
     useEffect(() => {
-        const token = JSON.parse(localStorage.getItem('access_token'));
+        const token = JSON.parse(localStorage.getItem("access_token"));
         if (token) {
             try {
                 const decodedToken = jwtDecode(token);
                 setCurrentWorkerId(decodedToken.id);
             } catch (error) {
-                console.error('Ошибка декодирования токена:', error);
+                console.error("Ошибка декодирования токена:", error);
             }
         }
 
-        axios
-            .get('http://localhost:5000/api/tables/all')
-            .then((response) => {
-                setTables(response.data.innerData);
-            })
-            .catch((error) => console.error('Ошибка загрузки столов:', error));
+        // Загружаем столы при монтировании компонента
+        fetchTables();
 
         if (!socket.connected) {
             socket.connect();
         }
 
-        socket.on('connect', () => {
-            console.log('Socket подключён в Stol');
+        socket.on("connect", () => {
+            console.log("Socket подключён в Stol");
         });
 
-        socket.on('table_status', ({ tableId, isActive, workerId }) => {
-            console.log(`Получено обновление статуса стола ${tableId}: ${isActive ? 'Занят' : 'Свободен'}, workerId: ${workerId}`);
+        socket.on("connect_error", (err) => {
+            console.error("Ошибка подключения Socket.io:", err.message);
+        });
+
+        socket.on("table_status", ({ tableId, isActive, workerId }) => {
+            console.log(
+                `Получено обновление статуса стола ${tableId}: ${isActive ? "Занят" : "Свободен"
+                }, workerId: ${workerId}`
+            );
             setTables((prevTables) =>
                 prevTables.map((table) =>
-                    table._id === tableId ? { ...table, isActive, workerId: workerId || table.workerId } : table
+                    table._id === tableId
+                        ? {
+                            ...table,
+                            isActive,
+                            workerId: workerId
+                                ? typeof workerId === "object"
+                                    ? workerId
+                                    : { _id: workerId }
+                                : null,
+                        }
+                        : table
                 )
             );
         });
 
         return () => {
-            socket.off('connect');
-            socket.off('table_status');
+            socket.off("connect");
+            socket.off("connect_error");
+            socket.off("table_status");
         };
     }, []);
 
-    const handleTableClick = (table) => {
-        // Если стол занят другим официантом, просто не открываем модальное окно
-        if (table.isActive && table.workerId && table.workerId._id !== currentWorkerId) {
-            return; // Не открываем модальное окно
+    const handleTableClick = async (table) => {
+        const token = JSON.parse(localStorage.getItem("access_token"));
+        if (!token) {
+            console.error("Токен доступа не найден");
+            return;
         }
-        setSelectedTable(table);
-        setIsModalOpen(true);
+
+        try {
+            const response = await axios.get(`https://cafe.abdujabborov.uz/api/tables/${table._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const tableData = response.data.innerData;
+
+            if (tableData.isActive && tableData.workerId && tableData.workerId._id !== currentWorkerId) {
+                alert("Этот стол уже занят другим официантом!");
+                return;
+            }
+
+            setSelectedTable(tableData);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error("Ошибка проверки статуса стола:", error);
+            alert("Не удалось проверить статус стола. Попробуйте снова.");
+        }
     };
 
     const closeModal = () => {
         setSelectedTable(null);
         setIsModalOpen(false);
+        // Обновляем данные о столах после закрытия модального окна
+        fetchTables();
     };
 
     return (
@@ -82,7 +127,11 @@ const Stol = () => {
             <header className="stol__header">
                 <h1 className="stol__title">Выбор стола</h1>
                 <Link className="stol__worker-btn" to="/personal-acc">
-                    <img src={personalAccIcon} alt="Personal Account" className="stol__worker-icon" />
+                    <img
+                        src={personalAccIcon}
+                        alt="Personal Account"
+                        className="stol__worker-icon"
+                    />
                     <span className="stol__worker-text">Личный кабинет</span>
                 </Link>
             </header>
@@ -91,18 +140,18 @@ const Stol = () => {
                     <div
                         key={table._id}
                         className={`stol__card 
-                            ${!table.isActive ? 'free' :
-                                table.workerId && table.workerId._id === currentWorkerId ? 'mine' :
-                                    'occupied'} 
-                            ${table.isActive && table.workerId && table.workerId._id !== currentWorkerId ? 'locked' : ''}`}
+              ${!table.isActive ? "free" : table.workerId?._id === currentWorkerId ? "mine" : "occupied"} 
+              ${table.isActive && table.workerId && table.workerId._id !== currentWorkerId ? "locked" : ""}`}
                         onClick={() => handleTableClick(table)}
                     >
                         <div className="stol__card-header">
                             <span className="stol__number">Стол {table.number}</span>
                             <span className="stol__status">
-                                {!table.isActive ? 'Свободен' :
-                                    table.workerId && table.workerId._id === currentWorkerId ? 'Мой' :
-                                        'Занят'}
+                                {!table.isActive
+                                    ? "Свободен"
+                                    : table.workerId?._id === currentWorkerId
+                                        ? "Мой"
+                                        : "Занят"}
                             </span>
                         </div>
                         <div className="stol__card-body">
@@ -114,7 +163,9 @@ const Stol = () => {
                     </div>
                 ))}
             </div>
-            {isModalOpen && <FoodModal isOpen={isModalOpen} onClose={closeModal} table={selectedTable} />}
+            {isModalOpen && (
+                <FoodModal isOpen={isModalOpen} onClose={closeModal} table={selectedTable} />
+            )}
         </div>
     );
 };
