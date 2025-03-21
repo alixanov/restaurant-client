@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { io } from "socket.io-client";
@@ -6,461 +6,495 @@ import "./food-modal.css";
 
 // Настройка Socket.io для подключения к новому серверу
 const socket = io("http://192.168.1.7:8080/", {
-     transports: ["websocket"],
-     cors: {
-          origin: "http://localhost:3000", // Клиентский домен остается прежним
-          credentials: true,
-     },
-     autoConnect: true,
-     secure: true, // Используем HTTPS
+  transports: ["websocket"],
+  cors: {
+    origin: "http://localhost:3000", // Клиентский домен остается прежним
+    credentials: true,
+  },
+  autoConnect: true,
+  secure: true, // Используем HTTPS
 });
 
 const FoodModal = ({ isOpen, onClose, table }) => {
-     const [foods, setFoods] = useState([]);
-     const [categories, setCategories] = useState([]);
-     const [selectedCategory, setSelectedCategory] = useState(null);
-     const [selectedFoods, setSelectedFoods] = useState([]);
-     const [loading, setLoading] = useState(false);
-     const [orderComplete, setOrderComplete] = useState(false);
-     const [workerName, setWorkerName] = useState("");
-     const [workerId, setWorkerId] = useState(null);
-     const [activeOrders, setActiveOrders] = useState([]);
-     const [isTableLocked, setIsTableLocked] = useState(false);
+  const [foods, setFoods] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedFoods, setSelectedFoods] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
+  const [workerName, setWorkerName] = useState("");
+  const [workerId, setWorkerId] = useState(null);
+  const [activeOrders, setActiveOrders] = useState([]);
+  const [isTableLocked, setIsTableLocked] = useState(false);
 
-     const fetchTableData = async (token, currentWorkerId) => {
-          try {
-               const tableResponse = await axios.get(`http://192.168.1.7:8080/api/tables/${table._id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-               });
-               const tableData = tableResponse.data.innerData;
-               setIsTableLocked(
-                    tableData.isActive &&
-                    tableData.workerId &&
-                    tableData.workerId._id?.toString() !== currentWorkerId.toString()
-               );
-
-               const ordersResponse = await axios.get(`http://192.168.1.7:8080/api/orders/table/${table._id}?workerId=${currentWorkerId}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-               });
-               setActiveOrders(ordersResponse.data.innerData || []);
-          } catch (error) {
-               console.error("Ошибка загрузки данных:", error);
+  const fetchTableData = useCallback(
+    async (token, currentWorkerId) => {
+      try {
+        const tableResponse = await axios.get(
+          `http://192.168.1.7:8080/api/tables/${table._id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-     };
+        );
+        const tableData = tableResponse.data.innerData;
+        setIsTableLocked(
+          tableData.isActive &&
+            tableData.workerId &&
+            tableData.workerId?.toString() !== currentWorkerId.toString()
+        );
 
-     useEffect(() => {
-          if (!socket.connected) {
-               socket.connect();
+        const ordersResponse = await axios.get(
+          `http://192.168.1.7:8080/api/orders/table/${table._id}?workerId=${currentWorkerId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
+        );
+        setActiveOrders(ordersResponse.data.innerData || []);
+      } catch (error) {
+        console.error("Ошибка загрузки данных:", error);
+      }
+    },
+    [table._id]
+  );
 
-          if (isOpen && table) {
-               const token = JSON.parse(localStorage.getItem("access_token"));
-               if (!token) {
-                    console.error("Токен доступа не найден");
-                    return;
-               }
+  useEffect(() => {
+    if (!socket.connected) {
+      socket.connect();
+    }
 
-               let currentWorkerId;
-               try {
-                    const decodedToken = jwtDecode(token);
-                    setWorkerName(decodedToken.login);
-                    currentWorkerId = decodedToken.id;
-                    setWorkerId(currentWorkerId);
-               } catch (error) {
-                    console.error("Ошибка декодирования токена:", error);
-                    return;
-               }
+    if (isOpen && table) {
+      const token = JSON.parse(localStorage.getItem("access_token"));
+      if (!token) {
+        console.error("Токен доступа не найден");
+        return;
+      }
 
-               fetchTableData(token, currentWorkerId);
+      let currentWorkerId;
+      try {
+        const decodedToken = jwtDecode(token);
+        setWorkerName(decodedToken.login);
+        currentWorkerId = decodedToken.id;
+        setWorkerId(currentWorkerId);
+      } catch (error) {
+        console.error("Ошибка декодирования токена:", error);
+        return;
+      }
 
-               axios
-                    .get("http://192.168.1.7:8080/api/foods/all", {
-                         headers: { Authorization: `Bearer ${token}` },
-                    })
-                    .then((response) => {
-                         const allFoods = response.data.innerData;
-                         const uniqueCategories = [...new Set(allFoods.map((food) => food.category))];
-                         setFoods(allFoods);
-                         setCategories(uniqueCategories);
-                    })
-                    .catch((error) => console.error("Ошибка загрузки блюд:", error));
-          }
+      fetchTableData(token, currentWorkerId);
 
-          const handleConnect = () => console.log("Socket подключён в FoodModal");
-          const handleNewOrder = (order) => {
-               if (order.table === table?._id) {
-                    console.log("Новый заказ принят:", order);
-                    setActiveOrders((prev) => [...prev, order]);
-                    setIsTableLocked(false); // Стол теперь принадлежит текущему официанту
-               }
-          };
-          const handleTableStatus = ({ tableId, isActive, workerId: tableWorkerId }) => {
-               if (tableId === table?._id) {
-                    const workerIdStr = tableWorkerId
-                         ? typeof tableWorkerId === "object"
-                              ? tableWorkerId._id?.toString()
-                              : tableWorkerId.toString()
-                         : null;
-                    setIsTableLocked(
-                         isActive &&
-                         workerIdStr &&
-                         workerIdStr !== (workerId?.toString() || "")
-                    );
-                    if (!isActive) {
-                         setOrderComplete(true);
-                         setTimeout(() => {
-                              setOrderComplete(false);
-                              setSelectedFoods([]);
-                              onClose();
-                         }, 1500);
-                    }
-               }
-          };
-          const handleBillGenerated = (data) => {
-               if (data.tableId === table?._id) {
-                    console.log("Счёт готов:", data);
-                    setLoading(false);
-                    setOrderComplete(true);
-                    setTimeout(() => {
-                         setOrderComplete(false);
-                         setSelectedFoods([]);
-                         onClose();
-                    }, 1500);
-               }
-          };
-          const handleOrderClosed = (order) => {
-               if (order.table._id === table?._id) {
-                    console.log("Заказ закрыт:", order);
-                    setActiveOrders((prev) => prev.filter((o) => o._id !== order._id));
-               }
-          };
-          const handleConnectError = (err) => console.error("Ошибка сокета:", err);
+      axios
+        .get("http://192.168.1.7:8080/api/foods/all", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const allFoods = response.data.innerData;
+          const uniqueCategories = [
+            ...new Set(allFoods.map((food) => food.category)),
+          ];
+          setFoods(allFoods);
+          setCategories(uniqueCategories);
+        })
+        .catch((error) => console.error("Ошибка загрузки блюд:", error));
+    }
 
-          socket.on("connect", handleConnect);
-          socket.on("new_order", handleNewOrder);
-          socket.on("table_status", handleTableStatus);
-          socket.on("bill_generated", handleBillGenerated);
-          socket.on("order_closed", handleOrderClosed);
-          socket.on("connect_error", handleConnectError);
+    const handleConnect = () => console.log("Socket подключён в FoodModal");
+    const handleNewOrder = (order) => {
+      if (order.table === table?._id) {
+        console.log("Новый заказ принят:", order);
+        setActiveOrders((prev) => [...prev, order]);
+        setIsTableLocked(false); // Стол теперь принадлежит текущему официанту
+      }
+    };
+    const handleTableStatus = ({
+      tableId,
+      isActive,
+      workerId: tableWorkerId,
+    }) => {
+      if (tableId === table?._id) {
+        const workerIdStr = tableWorkerId
+          ? typeof tableWorkerId === "object"
+            ? tableWorkerId?.toString()
+            : tableWorkerId.toString()
+          : null;
+        setIsTableLocked(
+          isActive &&
+            workerIdStr &&
+            workerIdStr !== (workerId?.toString() || "")
+        );
+        if (!isActive) {
+          setOrderComplete(true);
+          setTimeout(() => {
+            setOrderComplete(false);
+            setSelectedFoods([]);
+            onClose();
+          }, 1500);
+        }
+      }
+    };
+    const handleBillGenerated = (data) => {
+      if (data.tableId === table?._id) {
+        console.log("Счёт готов:", data);
+        setLoading(false);
+        setOrderComplete(true);
+        setTimeout(() => {
+          setOrderComplete(false);
+          setSelectedFoods([]);
+          onClose();
+        }, 1500);
+      }
+    };
+    const handleOrderClosed = () => {
+      setActiveOrders([]);
+    };
+    const handleConnectError = (err) => console.error("Ошибка сокета:", err);
 
-          return () => {
-               socket.off("connect", handleConnect);
-               socket.off("new_order", handleNewOrder);
-               socket.off("table_status", handleTableStatus);
-               socket.off("bill_generated", handleBillGenerated);
-               socket.off("order_closed", handleOrderClosed);
-               socket.off("connect_error", handleConnectError);
-          };
-     }, [isOpen, table, onClose]);
+    socket.on("connect", handleConnect);
+    socket.on("new_order", handleNewOrder);
+    socket.on("table_status", handleTableStatus);
+    socket.on("bill_generated", handleBillGenerated);
+    socket.on("order_closed", handleOrderClosed);
+    socket.on("connect_error", handleConnectError);
 
-     const handleFoodSelect = (food) => {
-          if (isTableLocked) {
-               alert("Этот стол заблокирован другим официантом!");
-               return;
-          }
-          const existingFood = selectedFoods.find((f) => f._id === food._id);
-          if (existingFood) {
-               setSelectedFoods(
-                    selectedFoods.map((f) =>
-                         f._id === food._id ? { ...f, count: f.count + 1 } : f
-                    )
-               );
-          } else {
-               setSelectedFoods([...selectedFoods, { ...food, count: 1 }]);
-          }
-     };
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("new_order", handleNewOrder);
+      socket.off("table_status", handleTableStatus);
+      socket.off("bill_generated", handleBillGenerated);
+      socket.off("order_closed", handleOrderClosed);
+      socket.off("connect_error", handleConnectError);
+    };
+  }, [isOpen, table, onClose, fetchTableData, workerId]);
 
-     const handleFoodDecrease = (food) => {
-          if (isTableLocked) {
-               alert("Этот стол заблокирован другим официантом!");
-               return;
-          }
-          const existingFood = selectedFoods.find((f) => f._id === food._id);
-          if (existingFood.count > 1) {
-               setSelectedFoods(
-                    selectedFoods.map((f) =>
-                         f._id === food._id ? { ...f, count: f.count - 1 } : f
-                    )
-               );
-          } else {
-               setSelectedFoods(selectedFoods.filter((f) => f._id !== food._id));
-          }
-     };
+  const handleFoodSelect = (food) => {
+    if (isTableLocked) {
+      alert("Этот стол заблокирован другим официантом!");
+      return;
+    }
+    const existingFood = selectedFoods.find((f) => f._id === food._id);
+    if (existingFood) {
+      setSelectedFoods(
+        selectedFoods.map((f) =>
+          f._id === food._id ? { ...f, count: f.count + 1 } : f
+        )
+      );
+    } else {
+      setSelectedFoods([...selectedFoods, { ...food, count: 1 }]);
+    }
+  };
 
-     const handleOrder = () => {
-          if (isTableLocked) {
-               alert("Этот стол заблокирован другим официантом!");
-               return;
-          }
-          setLoading(true);
-          const token = JSON.parse(localStorage.getItem("access_token"));
-          if (!token) {
-               console.error("Токен доступа не найден");
-               setLoading(false);
-               return;
-          }
+  const handleFoodDecrease = (food) => {
+    if (isTableLocked) {
+      alert("Этот стол заблокирован другим официантом!");
+      return;
+    }
+    const existingFood = selectedFoods.find((f) => f._id === food._id);
+    if (existingFood.count > 1) {
+      setSelectedFoods(
+        selectedFoods.map((f) =>
+          f._id === food._id ? { ...f, count: f.count - 1 } : f
+        )
+      );
+    } else {
+      setSelectedFoods(selectedFoods.filter((f) => f._id !== food._id));
+    }
+  };
 
-          let currentWorkerId;
-          try {
-               const decodedToken = jwtDecode(token);
-               currentWorkerId = decodedToken.id;
-               setWorkerId(currentWorkerId);
-          } catch (error) {
-               console.error("Ошибка декодирования токена:", error);
-               setLoading(false);
-               return;
-          }
+  const handleOrder = () => {
+    if (isTableLocked) {
+      alert("Этот стол заблокирован другим официантом!");
+      return;
+    }
+    setLoading(true);
+    const token = JSON.parse(localStorage.getItem("access_token"));
+    if (!token) {
+      console.error("Токен доступа не найден");
+      setLoading(false);
+      return;
+    }
 
-          const orderData = {
-               tableId: table._id,
-               foods: selectedFoods.map((food) => ({ food: food._id, quantity: food.count })),
-               workerId: currentWorkerId,
-          };
+    let currentWorkerId;
+    try {
+      const decodedToken = jwtDecode(token);
+      currentWorkerId = decodedToken.id;
+      setWorkerId(currentWorkerId);
+    } catch (error) {
+      console.error("Ошибка декодирования токена:", error);
+      setLoading(false);
+      return;
+    }
 
-          axios
-               .post("http://192.168.1.7:8080/api/orders", orderData, {
-                    headers: { Authorization: `Bearer ${token}` },
-               })
-               .then((response) => {
-                    console.log("Заказ успешно отправлен:", response.data);
-                    setLoading(false);
-                    setOrderComplete(true);
-                    setTimeout(() => {
-                         setOrderComplete(false);
-                         setSelectedFoods([]);
-                    }, 1500);
-               })
-               .catch((error) => {
-                    console.error("Ошибка создания заказа:", error.response?.data || error.message);
-                    setLoading(false);
-               });
-     };
+    const orderData = {
+      tableId: table._id,
+      foods: selectedFoods.map((food) => ({
+        food: food._id,
+        quantity: food.count,
+      })),
+      workerId: currentWorkerId,
+    };
 
-     const handleCloseAllOrders = async () => {
-          setLoading(true);
-          const token = JSON.parse(localStorage.getItem("access_token"));
-          if (!token) {
-               console.error("Токен доступа не найден");
-               setLoading(false);
-               return;
-          }
+    axios
+      .post("http://192.168.1.7:8080/api/orders", orderData, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        console.log("Заказ успешно отправлен:", response.data);
+        setLoading(false);
+        setOrderComplete(true);
+        setTimeout(() => {
+          setOrderComplete(false);
+          setSelectedFoods([]);
+        }, 1500);
+      })
+      .catch((error) => {
+        console.error(
+          "Ошибка создания заказа:",
+          error.response?.data || error.message
+        );
+        setLoading(false);
+      });
+  };
 
-          try {
-               const decodedToken = jwtDecode(token);
-               const currentWorkerId = decodedToken.id;
+  const handleCloseAllOrders = async () => {
+    setLoading(true);
+    const token = JSON.parse(localStorage.getItem("access_token"));
+    if (!token) {
+      console.error("Токен доступа не найден");
+      setLoading(false);
+      return;
+    }
 
-               const closePromises = activeOrders.map((order) =>
-                    axios.post(
-                         `http://192.168.1.7:8080/api/orders/${order._id}/close`,
-                         { workerId: currentWorkerId },
-                         { headers: { Authorization: `Bearer ${token}` } }
-                    )
-               );
-               await Promise.all(closePromises);
-               activeOrders.forEach((order) => console.log(`Заказ ${order._id} успешно закрыт`));
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentWorkerId = decodedToken.id;
 
-               if (activeOrders.length > 0) {
-                    const items = aggregateAllOrderItems();
-                    const total = calculateTotalPrice();
-                    try {
-                         await axios.post(
-                              `http://192.168.1.7:8080/api/print-receipt`,
-                              {
-                                   tableId: table._id,
-                                   items: items.map((item) => ({
-                                        food: {
-                                             _id: item.food._id,
-                                             name: item.food.name,
-                                             price: item.food.price,
-                                             category: item.food.category,
-                                        },
-                                        quantity: item.quantity,
-                                   })),
-                                   total,
-                              },
-                              { headers: { Authorization: `Bearer ${token}` } }
-                         );
-                         console.log("Запрос на печать одного чека отправлен с total:", total);
-                    } catch (printError) {
-                         console.error("Ошибка при отправке запроса на печать:", printError);
-                    }
-               }
+      const closePromises = activeOrders.map((order) =>
+        axios.post(
+          `http://192.168.1.7:8080/api/orders/${order._id}/close`,
+          { workerId: currentWorkerId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      );
+      await Promise.all(closePromises);
+      activeOrders.forEach((order) =>
+        console.log(`Заказ ${order._id} успешно закрыт`)
+      );
 
-               setLoading(false);
-               setOrderComplete(true);
-               setTimeout(() => {
-                    setOrderComplete(false);
-                    onClose();
-               }, 1500);
-          } catch (error) {
-               console.error("Ошибка закрытия заказов:", error.response?.data || error.message);
-               setLoading(false);
-               alert("Произошла ошибка при закрытии заказов");
-          }
-     };
-     const aggregateAllOrderItems = () => {
-          const allItems = activeOrders.flatMap((order) => order.foods);
-          const aggregated = allItems.reduce((acc, item) => {
-               const existingItem = acc.find((i) => i.food._id === item.food._id);
-               if (existingItem) {
-                    existingItem.quantity += item.quantity;
-               } else {
-                    acc.push({ ...item });
-               }
-               return acc;
-          }, []);
-          return aggregated;
-     };
+      if (activeOrders.length > 0) {
+        const items = aggregateAllOrderItems();
+        const total = calculateTotalPrice();
+        try {
+          await axios.post(
+            `http://192.168.1.7:8080/api/print-receipt`,
+            {
+              tableId: table._id,
+              items: items.map((item) => ({
+                food: {
+                  _id: item.food._id,
+                  name: item.food.name,
+                  price: item.food.price,
+                  category: item.food.category,
+                },
+                quantity: item.quantity,
+              })),
+              total,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          console.log("Запрос на печать одного чека отправлен с total:", total);
+        } catch (printError) {
+          console.error("Ошибка при отправке запроса на печать:", printError);
+        }
+      }
 
-     const calculateTotalPrice = () => {
-          return activeOrders.reduce((total, order) => total + order.totalPrice, 0);
-     };
+      setLoading(false);
+      setOrderComplete(true);
+      setTimeout(() => {
+        setOrderComplete(false);
+        onClose();
+      }, 1500);
+    } catch (error) {
+      console.error(
+        "Ошибка закрытия заказов:",
+        error.response?.data || error.message
+      );
+      setLoading(false);
+      alert("Произошла ошибка при закрытии заказов");
+    }
+  };
+  const aggregateAllOrderItems = () => {
+    const allItems = activeOrders.flatMap((order) => order.foods);
+    const aggregated = allItems.reduce((acc, item) => {
+      const existingItem = acc.find((i) => i.food._id === item.food._id);
+      if (existingItem) {
+        existingItem.quantity += item.quantity;
+      } else {
+        acc.push({ ...item });
+      }
+      return acc;
+    }, []);
+    return aggregated;
+  };
 
-     if (!isOpen || !table) return null;
+  const calculateTotalPrice = () => {
+    return activeOrders.reduce((total, order) => total + order.totalPrice, 0);
+  };
 
-     return (
-          <div className="food-modal-overlay">
-               <div className="food-modal">
-                    <div className="food-modal__header">
-                         <h2 className="food-modal__title">Стол #{table.number}</h2>
-                         <button className="food-modal__close" onClick={onClose}>
-                              ×
-                         </button>
-                    </div>
-                    <div className="food-modal__worker-info">
-                         <span className="food-modal__worker-name">Имя: {workerName}</span>
-                    </div>
+  if (!isOpen || !table) return null;
 
-                    {activeOrders.length > 0 && (
-                         <div className="food-modal__active-orders">
-                              <h3 className="food-modal__subtitle">Активные заказы</h3>
-                              <div className="food-modal__order">
-                                   <div className="food-modal__order-content">
-                                        <ul className="food-modal__order-items">
-                                             {aggregateAllOrderItems().map((item, index) => (
-                                                  <li key={index}>
-                                                       {item.food.name} × {item.quantity} —{" "}
-                                                       {(item.food.price * item.quantity).toLocaleString()} сум
-                                                  </li>
-                                             ))}
-                                        </ul>
-                                        <div className="food-modal__order-footer">
-                                             <span className="food-modal__order-total">
-                                                  Итого: {calculateTotalPrice().toLocaleString()} сум
-                                             </span>
-                                             {!isTableLocked && (
-                                                  <button
-                                                       className="food-modal__bill-btn"
-                                                       onClick={handleCloseAllOrders}
-                                                       disabled={loading}
-                                                  >
-                                                       Закрыть
-                                                  </button>
-                                             )}
-                                        </div>
-                                   </div>
-                              </div>
-                         </div>
-                    )}
+  return (
+    <div className="food-modal-overlay">
+      <div className="food-modal">
+        <div className="food-modal__header">
+          <h2 className="food-modal__title">Стол #{table.number}</h2>
+          <button className="food-modal__close" onClick={onClose}>
+            ×
+          </button>
+        </div>
+        <div className="food-modal__worker-info">
+          <span className="food-modal__worker-name">Имя: {workerName}</span>
+        </div>
 
-                    {!selectedCategory ? (
-                         <div className="food-modal__categories">
-                              <div className="food-modal__categories-grid">
-                                   {categories.map((category, index) => (
-                                        <button
-                                             key={index}
-                                             className="food-modal__category-btn"
-                                             onClick={() => setSelectedCategory(category)}
-                                             disabled={isTableLocked}
-                                        >
-                                             {category}
-                                        </button>
-                                   ))}
-                              </div>
-                         </div>
-                    ) : (
-                         <div className="food-modal__content">
-                              <button
-                                   className="food-modal__back-btn"
-                                   onClick={() => setSelectedCategory(null)}
-                              >
-                                   ←
-                              </button>
-                              <h3 className="food-modal__subtitle">{selectedCategory}</h3>
-                              <div className="food-modal__grid">
-                                   {foods
-                                        .filter((food) => food.category === selectedCategory)
-                                        .map((food) => {
-                                             const isSelected = selectedFoods.find((f) => f._id === food._id);
-                                             return (
-                                                  <div
-                                                       key={food._id}
-                                                       className={`food-modal__item ${isSelected ? "active" : ""}`}
-                                                       onClick={() => handleFoodSelect(food)}
-                                                  >
-                                                       <img
-                                                            src={food.image}
-                                                            alt={food.name}
-                                                            className="food-modal__image"
-                                                       />
-                                                       <span className="food-modal__name">{food.name}</span>
-                                                       <span className="food-modal__price">{food.price} сум</span>
-                                                       {isSelected && (
-                                                            <div className="food-modal__controls">
-                                                                 <button
-                                                                      className="food-modal__control-btn"
-                                                                      onClick={(e) => {
-                                                                           e.stopPropagation();
-                                                                           handleFoodDecrease(food);
-                                                                      }}
-                                                                 >
-                                                                      −
-                                                                 </button>
-                                                                 <span className="food-modal__count">{isSelected.count}</span>
-                                                                 <button
-                                                                      className="food-modal__control-btn"
-                                                                      onClick={(e) => {
-                                                                           e.stopPropagation();
-                                                                           handleFoodSelect(food);
-                                                                      }}
-                                                                 >
-                                                                      +
-                                                                 </button>
-                                                            </div>
-                                                       )}
-                                                  </div>
-                                             );
-                                        })}
-                              </div>
-                              {selectedFoods.length > 0 && (
-                                   <div className="food-modal__footer">
-                                        <button
-                                             className="food-modal__cancel-btn"
-                                             onClick={onClose}
-                                             disabled={loading}
-                                        >
-                                             Отмена
-                                        </button>
-                                        <button
-                                             className="food-modal__order-btn"
-                                             onClick={handleOrder}
-                                             disabled={loading || isTableLocked}
-                                        >
-                                             {loading ? (
-                                                  <span className="food-modal__loader"></span>
-                                             ) : orderComplete ? (
-                                                  "Готово"
-                                             ) : (
-                                                  `Заказать (${selectedFoods.reduce((sum, f) => sum + f.count, 0)})`
-                                             )}
-                                        </button>
-                                   </div>
-                              )}
-                         </div>
-                    )}
-               </div>
+        {activeOrders.length > 0 && (
+          <div className="food-modal__active-orders">
+            <h3 className="food-modal__subtitle">Активные заказы</h3>
+            <div className="food-modal__order">
+              <div className="food-modal__order-content">
+                <ul className="food-modal__order-items">
+                  {aggregateAllOrderItems().map((item, index) => (
+                    <li key={index}>
+                      {item.food.name} × {item.quantity} —{" "}
+                      {(item.food.price * item.quantity).toLocaleString()} сум
+                    </li>
+                  ))}
+                </ul>
+                <div className="food-modal__order-footer">
+                  <span className="food-modal__order-total">
+                    Итого: {calculateTotalPrice().toLocaleString()} сум
+                  </span>
+                  {!isTableLocked && (
+                    <button
+                      className="food-modal__bill-btn"
+                      onClick={handleCloseAllOrders}
+                      disabled={loading}
+                    >
+                      Закрыть
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-     );
+        )}
+
+        {!selectedCategory ? (
+          <div className="food-modal__categories">
+            <div className="food-modal__categories-grid">
+              {categories.map((category, index) => (
+                <button
+                  key={index}
+                  className="food-modal__category-btn"
+                  onClick={() => setSelectedCategory(category)}
+                  disabled={isTableLocked}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="food-modal__content">
+            <button
+              className="food-modal__back-btn"
+              onClick={() => setSelectedCategory(null)}
+            >
+              ←
+            </button>
+            <h3 className="food-modal__subtitle">{selectedCategory}</h3>
+            <div className="food-modal__grid">
+              {foods
+                .filter((food) => food.category === selectedCategory)
+                .map((food) => {
+                  const isSelected = selectedFoods.find(
+                    (f) => f._id === food._id
+                  );
+                  return (
+                    <div
+                      key={food._id}
+                      className={`food-modal__item ${
+                        isSelected ? "active" : ""
+                      }`}
+                      onClick={() => handleFoodSelect(food)}
+                    >
+                      <img
+                        src={food.image}
+                        alt={food.name}
+                        className="food-modal__image"
+                      />
+                      <span className="food-modal__name">{food.name}</span>
+                      <span className="food-modal__price">
+                        {food.price} сум
+                      </span>
+                      {isSelected && (
+                        <div className="food-modal__controls">
+                          <button
+                            className="food-modal__control-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFoodDecrease(food);
+                            }}
+                          >
+                            −
+                          </button>
+                          <span className="food-modal__count">
+                            {isSelected.count}
+                          </span>
+                          <button
+                            className="food-modal__control-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleFoodSelect(food);
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+            {selectedFoods.length > 0 && (
+              <div className="food-modal__footer">
+                <button
+                  className="food-modal__cancel-btn"
+                  onClick={onClose}
+                  disabled={loading}
+                >
+                  Отмена
+                </button>
+                <button
+                  className="food-modal__order-btn"
+                  onClick={handleOrder}
+                  disabled={loading || isTableLocked}
+                >
+                  {loading ? (
+                    <span className="food-modal__loader"></span>
+                  ) : orderComplete ? (
+                    "Готово"
+                  ) : (
+                    `Заказать (${selectedFoods.reduce(
+                      (sum, f) => sum + f.count,
+                      0
+                    )})`
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default FoodModal;

@@ -1,191 +1,191 @@
 .stol {
-     width: 100%;
-     min-height: 100vh;
-     padding: 20px;
-     color: #ffffff;
-     background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
 }
 
 .stol__header {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     margin-bottom: 30px;
-     padding: 15px;
-     background: rgba(30, 30, 30, 0.9);
-     border-radius: 12px;
-     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: rgba(30, 30, 30, 0.9);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .stol__title {
-     font-size: 28px;
-     font-weight: 600;
-     letter-spacing: 1px;
-     margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 .stol__worker-btn {
-     display: flex;
-     align-items: center;
-     gap: 8px;
-     padding: 8px 15px;
-     background: white;
-     border-radius: 8px;
-     text-decoration: none;
-     color: #222222;
-     transition: background 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background: white;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #222222;
+  transition: background 0.3s ease;
 }
 
 .stol__worker-btn:hover {
-     background: rgba(255, 255, 255, 0.689);
+  background: rgba(255, 255, 255, 0.689);
 }
 
 .stol__worker-icon {
-     width: 24px;
-     height: 24px;
-     filter: invert(1);
+  width: 24px;
+  height: 24px;
+  filter: invert(1);
 }
 
 .stol__worker-text {
-     font-size: 14px;
+  font-size: 14px;
 }
 
 .stol__grid {
-     display: grid;
-     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-     gap: 20px;
-     padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 0 10px;
 }
 
 .stol__card {
-     padding: 20px;
-     border-radius: 12px;
-     cursor: pointer;
-     transition: transform 0.2s ease, box-shadow 0.2s ease;
-     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border: solid 1px transparent;
 }
 
 .stol__card:hover {
-     transform: translateY(-5px);
-     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-     border: solid 1px white;
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border: solid 1px white;
 }
 
 .stol__card.free {
-     background: linear-gradient(135deg, #2a6041, #1a3c34);
+  background: linear-gradient(135deg, #2a6041, #1a3c34);
 }
 
 .stol__card.occupied {
-     background: linear-gradient(135deg, #5c2a2a, #3a1c1c);
+  background: linear-gradient(135deg, #5c2a2a, #3a1c1c);
 }
 
 .stol__card.mine {
-/* background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); */
-background: linear-gradient(120deg, #434343 0%, #000000 100%);
+  /* background: linear-gradient(120deg, #f6d365 0%, #fda085 100%); */
+  background: linear-gradient(120deg, #434343 0%, #000000 100%);
 }
 
 .stol__card.locked {
-     opacity: 0.7;
-     cursor: not-allowed;
-     border-radius: 20px;
+  opacity: 0.7;
+  cursor: not-allowed;
+  border-radius: 20px;
 }
 
-
 .stol__card-header {
-     display: flex;
-     justify-content: space-between;
-     align-items: center;
-     margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .stol__number {
-     font-size: 18px;
-     font-weight: 600;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .stol__status {
-     font-size: 14px;
-     padding: 4px 8px;
-     border-radius: 12px;
-     background: rgba(255, 255, 255, 0.1);
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .stol__card-body {
-     display: flex;
-     flex-direction: column;
-     gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .stol__capacity {
-     font-size: 16px;
-     opacity: 0.9;
+  font-size: 16px;
+  opacity: 0.9;
 }
 
 .stol__occupied-by {
-     font-size: 14px;
-     color: #ff4444;
-     font-style: italic;
+  font-size: 14px;
+  color: #ff4444;
+  font-style: italic;
 }
 
 /* Медиа-запросы для мобильных устройств */
 @media (max-width: 768px) {
-     .stol__header {
-          display: flex;
-          justify-content: space-between;
-          gap: 15px;
-          padding: 10px;
-     }
+  .stol__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 10px;
+  }
 
-     .stol__title {
-          font-size: 24px;
-     }
+  .stol__title {
+    font-size: 24px;
+  }
 
-     .stol__worker-btn {
-          width: 40px;
-          height: 40px;
-          padding: 8px;
-          justify-content: center;
-          border-radius: 50%;
-     }
+  .stol__worker-btn {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    justify-content: center;
+    border-radius: 50%;
+  }
 
-     .stol__worker-text {
-          display: none;
-     }
+  .stol__worker-text {
+    display: none;
+  }
 
-     .stol__worker-icon {
-          width: 24px;
-          height: 24px;
-     }
+  .stol__worker-icon {
+    width: 24px;
+    height: 24px;
+  }
 
-     .stol__grid {
-          grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-          gap: 15px;
-          padding: 0 5px;
-     }
+  .stol__grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    padding: 0 5px;
+  }
 
-     .stol__card {
-          padding: 15px;
-     }
+  .stol__card {
+    padding: 15px;
+  }
 
-     .stol__number {
-          font-size: 16px;
-     }
+  .stol__number {
+    font-size: 16px;
+  }
 
-     .stol__capacity {
-          font-size: 14px;
-     }
+  .stol__capacity {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 480px) {
-     .stol {
-          padding: 10px;
-     }
+  .stol {
+    padding: 10px;
+  }
 
-     .stol__title {
-          font-size: 20px;
-     }
+  .stol__title {
+    font-size: 20px;
+  }
 
-     .stol__grid {
-          grid-template-columns: 1fr;
-     }
+  .stol__grid {
+    grid-template-columns: 1fr;
+  }
 }
