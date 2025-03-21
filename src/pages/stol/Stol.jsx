@@ -7,25 +7,25 @@ import FoodModal from "./FoodModal";
 import { Link } from "react-router-dom";
 import personalAccIcon from "../../assets/personal-acc-icon.png";
 
-// Исправляем URL для Socket.io (порт указываем явно или через переменную окружения)
-const socket = io(`http://192.168.1.3:8080`, {
+// Исправляем URL для Socket.io
+const socket = io("http://192.168.1.7:8080/", {
     transports: ["websocket"],
     cors: {
-        origin: "http://localhost:3000", // Убрали лишний слэш
+        origin: ["http://localhost:3000"],
         credentials: true,
     },
     autoConnect: true,
 });
+
 const Stol = () => {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentWorkerId, setCurrentWorkerId] = useState(null);
 
-    // Функция для загрузки столов
     const fetchTables = async () => {
         try {
-            const response = await axios.get("http://192.168.1.3:8080/api/tables/all");
+            const response = await axios.get("http://192.168.1.7:8080/api/tables/all");
             setTables(response.data.innerData);
         } catch (error) {
             console.error("Ошибка загрузки столов:", error);
@@ -43,7 +43,6 @@ const Stol = () => {
             }
         }
 
-        // Загружаем столы при монтировании компонента
         fetchTables();
 
         if (!socket.connected) {
@@ -60,8 +59,7 @@ const Stol = () => {
 
         socket.on("table_status", ({ tableId, isActive, workerId }) => {
             console.log(
-                `Получено обновление статуса стола ${tableId}: ${isActive ? "Занят" : "Свободен"
-                }, workerId: ${workerId}`
+                `Получено обновление статуса стола ${tableId}: ${isActive ? "Занят" : "Свободен"}, workerId: ${workerId}`
             );
             setTables((prevTables) =>
                 prevTables.map((table) =>
@@ -95,7 +93,7 @@ const Stol = () => {
         }
 
         try {
-            const response = await axios.get(`http://192.168.1.3:8080/api/tables/${table._id}`, {
+            const response = await axios.get(`http://192.168.1.7:8080/api/tables/${table._id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const tableData = response.data.innerData;
@@ -116,7 +114,6 @@ const Stol = () => {
     const closeModal = () => {
         setSelectedTable(null);
         setIsModalOpen(false);
-        // Обновляем данные о столах после закрытия модального окна
         fetchTables();
     };
 
