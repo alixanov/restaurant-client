@@ -143,9 +143,7 @@ const FoodModal = ({ isOpen, onClose, table }) => {
         }, 1500);
       }
     };
-    const handleOrderClosed = () => {
-      setActiveOrders([]);
-    };
+    const handleOrderClosed = () => setActiveOrders([]);
     const handleConnectError = (err) => console.error("Ошибка сокета:", err);
 
     socket.on("connect", handleConnect);

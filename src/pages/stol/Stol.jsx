@@ -131,6 +131,10 @@ const Stol = () => {
     fetchTables();
   };
 
+  console.log('====================================');
+  console.log(tables?.[0]?.workerId, currentWorkerId);
+  console.log('====================================');
+
   return (
     <div className="stol">
       <header className="stol__header">
